@@ -1,6 +1,6 @@
-### 说明现在老的提交方式 账号+密码已不能提交到github仓库了 所以改为ssh and GPG keys的方式提交到github仓库
+**说明: ** 现在老的提交方式 账号+密码已不能提交到github仓库了 所以改为ssh and GPG keys的方式提交到github仓库
 操作如下 
-1. 本地生成 SSH key： 
+1. **本地生成 SSH key**： 
 ssh-keygen -t ed25519 -C "lxyxd_2019@outlook.com" 
 
 ```
@@ -16,7 +16,7 @@ drwxr-x---+ 64 xiaoyongliu  staff  2048 Mar  3 15:54 ..
 -rw-------   1 xiaoyongliu  staff  1111 Feb 25 11:40 known_hosts.old
 ```
 
-2. 把公钥添加到 GitHub → Settings → SSH and GPG keys → Add new SSH Key
+2. **把公钥添加到 GitHub → Settings → SSH and GPG keys → Add new SSH Key**
 
 ```
 SSH keys
@@ -31,7 +31,7 @@ Last used within the last week — Read/write
 Check out our guide to connecting to GitHub using SSH keys or troubleshoot common SSH problems.
 
 ```
-3. 把仓库的远程地址改成 SSH：
+3. **把仓库的远程地址改成 SSH**
 git remote set-url origin git@github.com:liuxiaoyong2022/langchain-ai-agent.git
 
 ```
