@@ -30,6 +30,7 @@ class EmbedModelInfo(BaseModel):
     base_url: str = Field(..., description="API 基础 URL")
     api_key: str = Field(..., description="API Key 或环境变量名")
     model_id: str | None = Field(None, description="可选的模型 ID")
+    batch_size: int = Field(40, description="批量向量化大小")
 
 
 class RerankerInfo(BaseModel):
@@ -45,14 +46,14 @@ class RerankerInfo(BaseModel):
 # ============================================================
 
 DEFAULT_CHAT_MODEL_PROVIDERS: dict[str, ChatModelProvider] = {
-    # "openai": ChatModelProvider(
-    #     name="OpenAI",
-    #     url="https://platform.openai.com/docs/models",
-    #     base_url="https://api.openai.com/v1",
-    #     default="gpt-4o-mini",
-    #     env="OPENAI_API_KEY",
-    #     models=["gpt-4", "gpt-4o", "gpt-4o-mini"],
-    # ),
+    "openai": ChatModelProvider(
+        name="OpenAI",
+        url="https://platform.openai.com/docs/models",
+        base_url="https://api.openai.com/v1",
+        default="gpt-5-mini",
+        env="OPENAI_API_KEY",
+        models=["gpt-5.2", "gpt-5-mini", "gpt-5.2-pro"],
+    ),
     "deepseek": ChatModelProvider(
         name="DeepSeek",
         url="https://platform.deepseek.com/api-docs/zh-cn/pricing",
@@ -61,31 +62,29 @@ DEFAULT_CHAT_MODEL_PROVIDERS: dict[str, ChatModelProvider] = {
         env="DEEPSEEK_API_KEY",
         models=["deepseek-chat", "deepseek-reasoner"],
     ),
-
-    # "zhipu": ChatModelProvider(
-    #     name="智谱AI (Zhipu)",
-    #     url="https://open.bigmodel.cn/dev/api",
-    #     base_url="https://open.bigmodel.cn/api/paas/v4/",
-    #     default="glm-4.5-flash",
-    #     env="ZHIPUAI_API_KEY",
-    #     models=["glm-4.6", "glm-4.5-air", "glm-4.5-flash"],
-    # ),
+    "zhipu": ChatModelProvider(
+        name="智谱AI (Zhipu)",
+        url="https://open.bigmodel.cn/dev/api",
+        base_url="https://open.bigmodel.cn/api/paas/v4/",
+        default="glm-4.7-flash",
+        env="ZHIPUAI_API_KEY",
+        models=["glm-5", "glm-4.5-air", "glm-4.7-flash"],
+    ),
     "siliconflow": ChatModelProvider(
         name="SiliconFlow",
         url="https://cloud.siliconflow.cn/models",
         base_url="https://api.siliconflow.cn/v1",
-        default="deepseek-ai/DeepSeek-V3.2",
+        default="Pro/deepseek-ai/DeepSeek-V3.2",
         env="SILICONFLOW_API_KEY",
         models=[
-            "deepseek-ai/DeepSeek-V3.2",
-            "Qwen/Qwen3-235B-A22B-Thinking-2507",
-            "Qwen/Qwen3-235B-A22B-Instruct-2507",
-            "moonshotai/Kimi-K2-Instruct-0905",
-            "zai-org/GLM-4.6",
+            "Pro/deepseek-ai/DeepSeek-V3.2",
+            "Pro/MiniMaxAI/MiniMax-M2.5",
+            "Pro/zai-org/GLM-5",
+            "Pro/moonshotai/Kimi-K2.5",
         ],
     ),
-    # "together.ai": ChatModelProvider(
-    #     name="Together.ai",
+    # "together": ChatModelProvider(
+    #     name="Together",
     #     url="https://api.together.ai/models",
     #     base_url="https://api.together.xyz/v1/",
     #     default="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
@@ -102,79 +101,53 @@ DEFAULT_CHAT_MODEL_PROVIDERS: dict[str, ChatModelProvider] = {
             "qwen-max-latest",
             "qwen-plus-latest",
             "qwen-turbo-latest",
-            "qwen3-235b-a22b-thinking-2507",
-            "qwen3-235b-a22b-instruct-2507",
         ],
     ),
-    # "ark": ChatModelProvider(
-    #     name="豆包（Ark）",
-    #     url="https://console.volcengine.com/ark/region:ark+cn-beijing/model",
-    #     base_url="https://ark.cn-beijing.volces.com/api/v3",
-    #     default="doubao-seed-1-6-250615",
-    #     env="ARK_API_KEY",
-    #     models=[
-    #         "doubao-seed-1-6-250615",
-    #         "doubao-seed-1-6-thinking-250715",
-    #         "doubao-seed-1-6-flash-250715",
-    #     ],
-    # ),
-    # "openrouter": ChatModelProvider(
-    #     name="OpenRouter",
-    #     url="https://openrouter.ai/models",
-    #     base_url="https://openrouter.ai/api/v1",
-    #     default="openai/gpt-4o",
-    #     env="OPENROUTER_API_KEY",
-    #     models=[
-    #         "openai/gpt-4o",
-    #         "x-ai/grok-4",
-    #         "google/gemini-2.5-pro",
-    #         "anthropic/claude-sonnet-4",
-    #     ],
-    # ),
-    # # "moonshot": ChatModelProvider(
-    # #     name="月之暗面",
-    # #     url="https://platform.moonshot.cn/docs/overview",
-    # #     base_url="https://api.moonshot.cn/v1",
-    # #     default="kimi-latest",
-    # #     env="MOONSHOT_API_KEY",
-    # #     models=[
-    # #         "kimi-latest",
-    # #         "kimi-k2-thinking",
-    # #         "kimi-k2-0905-preview",
-    # #     ],
-    # # ), # 目前适配有问题 Error code: 400 - {'error': {'message': 'Invalid request: function name is invalid, must start with a letter and can contain letters, numbers, underscores, and dashes', 'type': 'invalid_request_error'}}   # noqa: E501
-    # "modelscope": ChatModelProvider(
-    #     name="ModelScope",
-    #     url="https://www.modelscope.cn/docs/model-service/API-Inference/intro",
-    #     base_url="https://api-inference.modelscope.cn/v1/",
-    #     default="deepseek-ai/DeepSeek-V3.2",
-    #     env="MODELSCOPE_ACCESS_TOKEN",
-    #     models=["Qwen/Qwen3-32B", "deepseek-ai/DeepSeek-V3.2"],
-    # ),
-    # 本地 Ollama 服务
-    "local-ollama": ChatModelProvider(
-        name="Local Ollama",
-        url="https://ollama.com",
-        # base_url="http://123.207.2.20:8888/ollama/v1",
-        # default="cnshenyang/qwen3-nothink:14b",
-        base_url="http://121.89.95.203:9999/ollama/v1",
-        default="qwen3:32b",
-        env="NO_API_KEY",  # 对于不需要API Key的服务，使用NO_API_KEY
-        models=["qwen3:32b"],
-
+    "ark": ChatModelProvider(
+        name="豆包（Ark）",
+        url="https://console.volcengine.com/ark/region:ark+cn-beijing/model",
+        base_url="https://ark.cn-beijing.volces.com/api/v3",
+        default="doubao-seed-2-0-lite-260215",
+        env="ARK_API_KEY",
+        models=[
+            "doubao-seed-2-0-pro-260215",
+            "doubao-seed-2-0-lite-260215",
+            "doubao-seed-2-0-mini-260215",
+        ],
     ),
-    # 本地 Ollama deepseek-r1: 服务
-    # "local-ollama-deepseek-r1": ChatModelProvider(
-    #     name="Local deepseek-r1",
-    #     url="https://ollama.com",
-    #     base_url="http://121.89.95.203:9999/ollama/v1",
-    #     default="MFDoom/deepseek-r1-tool-calling:70b",
-    #     # default ="qwen3:32b",
-    #     env="NO_API_KEY",  # 对于不需要API Key的服务，使用NO_API_KEY
-    #     models=["MFDoom/deepseek-r1-tool-calling:70b"],
-    #     # models=["qwen3:32b"]
-    #
-    # )
+    "openrouter": ChatModelProvider(
+        name="OpenRouter",
+        url="https://openrouter.ai/models",
+        base_url="https://openrouter.ai/api/v1",
+        default="x-ai/grok-4.1-fast",
+        env="OPENROUTER_API_KEY",
+        models=[
+            "anthropic/claude-opus-4.6",
+            "anthropic/claude-sonnet-4.5",
+            "x-ai/grok-4.1-fast",
+            "x-ai/grok-4",
+        ],
+    ),
+    # "moonshot": ChatModelProvider(
+    #     name="月之暗面",
+    #     url="https://platform.moonshot.cn/docs/overview",
+    #     base_url="https://api.moonshot.cn/v1",
+    #     default="kimi-latest",
+    #     env="MOONSHOT_API_KEY",
+    #     models=[
+    #         "kimi-latest",
+    #         "kimi-k2-thinking",
+    #         "kimi-k2-0905-preview",
+    #     ],
+    # ), # 目前适配有问题 Error code: 400 - {'error': {'message': 'Invalid request: function name is invalid, must start with a letter and can contain letters, numbers, underscores, and dashes', 'type': 'invalid_request_error'}}   # noqa: E501
+    "modelscope": ChatModelProvider(
+        name="ModelScope",
+        url="https://www.modelscope.cn/docs/model-service/API-Inference/intro",
+        base_url="https://api-inference.modelscope.cn/v1/",
+        default="deepseek-ai/DeepSeek-V3.2",
+        env="MODELSCOPE_ACCESS_TOKEN",
+        models=["ZhipuAI/GLM-5", "ZhipuAI/GLM-4.7-Flash", "MiniMax/MiniMax-M2.5", "moonshotai/Kimi-K2.5", ""],
+    ),
 }
 
 
@@ -231,6 +204,7 @@ DEFAULT_EMBED_MODELS: dict[str, EmbedModelInfo] = {
         dimension=1024,
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings",
         api_key="DASHSCOPE_API_KEY",
+        batch_size=10,
     ),
 }
 

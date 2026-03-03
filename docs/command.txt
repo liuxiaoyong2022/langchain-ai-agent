@@ -1,0 +1,60 @@
+uvicorn server.main:app --host="0.0.0.0" --port=5050 --workers=1
+nohup uvicorn server.main:app --host="0.0.0.0" --port=5050 --workers=1 > ../uvicorn.log 2>&1 &
+
+
+nohup uvicorn  sriptname:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
+
+ssh -p 6000 -i ~/.ssh/id_rsa -o CertificateFile=~/.ssh/id_rsa.pub root@123.207.2.20
+ssh user@192.168.1.218
+Password@021
+
+
+  curl -H 'Content-Type: application/json' \
+       -X POST \
+       -d '{"query": "帮我查一下华为问界m7性能参数", "config": {"thread_id": "uui1262","model":"local-ollama/cnshenyang/qwen3-nothink:14b"}}' \
+       http://0.0.0.0:5050/api/chat/agent/CarbotMasterAgent
+
+curl \
+  -H 'Content-Type: application/json' \
+  -X POST \
+  -d '{ "query": "帮我查一下华为问界m7性能参数", \
+       "config": {"thread_id": "uui1262","model":"local-ollama/cnshenyang/qwen3-nothink:14b"}}' \
+  http://0.0.0.0:5050/api/chat/agent/CarbotMasterAgent
+
+
+
+
+curl -H 'Content-Type: application/json' -X POST -d '{"query": "帮我查一下华为问界m7性能参数", "config": {"thread_id": "uui1262","model":"local-ollama/cnshenyang/qwen3-nothink:14b"}}' http://0.0.0.0:5050/api/chat/agent/CarbotMasterAgent
+curl -H 'Content-Type: application/json' -X POST -d '{"query": "我要发个邮件,内容:21号文件全员学习,公司开发部二楼会议室，讨论新项目设计方案  主题：关于明天全员会议的通知  dev_staff_21@dev_depart.com", "config": {"thread_id": "uui1262","model":"local-ollama/cnshenyang/qwen3-nothink:14b"}}' http://0.0.0.0:5050/api/chat/agent/CarbotMasterAgent
+
+curl -H 'Content-Type: application/json' -X POST -d '{"query": "邮件没有发呢", "config": {"thread_id": "uui1262","model":"local-ollama/cnshenyang/qwen3-nothink:14b"}}' http://0.0.0.0:5050/api/chat/agent/CarbotMasterAgent
+
+
+curl -H 'Content-Type: application/json' -X POST -d '{"query": "请对比问界M9和问界M8的车身尺寸", "config": {"thread_id": "uui1262","model":"local-ollama/cnshenyang/qwen3-nothink:14b"}}' http://0.0.0.0:5050/api/chat/agent/CarbotMasterAgent
+
+curl -H 'Content-Type: application/json' -X POST -d '{"query": "帮我查一下特斯拉model 3的性能参数", "config": {"thread_id": "uui1262","model":"local-ollama/cnshenyang/qwen3-nothink:14b"}}' http://0.0.0.0:5050/api/chat/agent/CarbotMasterAgent
+
+curl -H 'Content-Type: application/json' -X POST -d '{"query": "生成一遍去云南旅游的攻略", "config": {"thread_id": "uui1262","model":"local-ollama/cnshenyang/qwen3-nothink:14b"}}' http://0.0.0.0:5050/api/chat/agent/CarbotMasterAgent
+
+curl -H 'Content-Type: application/json' -X POST -d '{"query": "帮我查询并分析一下特斯拉 model s 的介绍文章", "config": {"thread_id": "uui1262","model":"local-ollama/cnshenyang/qwen3-nothink:14b"}}' http://0.0.0.0:5050/api/chat/agent/CarbotMasterAgent
+
+curl -H 'Content-Type: application/json' -X POST -d '{"query": "帮我查一下小米su7的性能参数，并将结果发邮件到 lxyxd_2019@outlook.com", "config": {"thread_id": "uui1262","model":"local-ollama/cnshenyang/qwen3-nothink:14b"}}' http://0.0.0.0:5050/api/chat/agent/CarbotMasterAgent
+
+
+curl -H 'Content-Type: application/json' -X POST -d '{"query": "帮我生成一个数字人，让他播报一段文稿  主题:天上飞来五个字", "config": {"thread_id": "uui1262qwert","model":"local-ollama/cnshenyang/qwen3-nothink:14b"}}' http://0.0.0.0:5050/api/chat/agent/CarbotMasterAgent
+
+curl -H 'Content-Type: application/json' -X POST -d '{"query": "请问你家都卖什么球呀？", "config": {"thread_id": "uui1262qwert"}}' http://0.0.0.0:5050/api/chat/agent/CustomServiceAgent
+
+
+curl -H 'Content-Type: application/json' -X POST -d '{"query": "我要发个邮件,内容:明天全员会议,公司开发部二楼会议室，讨论新项目设计方案  主题：关于明天全员会议的通知  dev_staff@dev_depart.com", "config": {"thread_id": "uui1262qwert"}}' http://0.0.0.0:5050/api/chat/agent/CarbotMasterAgent
+
+
+curl -H 'Content-Type: application/json' -X POST -d '{ "user_id": "admin1","password": "abcd1234", "phone_number": "13980673777"}'  http://0.0.0.0:5050/api/auth/initialize
+curl -H 'Content-Type: application/json' -X POST -d '{ "user_id": "admin2","password": "abcd1234", "phone_number": "13980673666"}'  http://0.0.0.0:5050/api/auth/initialize
+
+
+{ "username": "user1","password": "abcd1234","role": "user","phone_number": "13980673811"}
+
+
+curl -H 'Content-Type: application/json' -X POST -d '{"query":"帮我分析一下最新热门话题","config":{"thread_id":"0dc5f5ba-a3cd-4a60-9e5a-ea8dd7161236"}}' http://0.0.0.0:5050/api/chat/agent/BiliAgent
+curl -H 'Content-Type: application/json' -X POST -d '{"query":"帮我分析一下当前马杜罗事件","config":{"thread_id":"0dc5f5ba-a3cd-4a60-9e5a-ea8dd7161236"}}' http://0.0.0.0:5050/api/chat/agent/BiliAgent

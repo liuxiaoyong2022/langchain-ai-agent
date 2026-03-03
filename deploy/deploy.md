@@ -131,6 +131,12 @@ pnpm run dev
 pnpm run server
 ```
 
-## 续
+## 1.8 deepagent升级
+
+从 0.3 升级到0.4.4 解决 无法从 chatbot 加载智能体: No module named 'deepagents.middleware.skills' 问题
+```bash
+
+pip install --upgrade deepagents==0.4.4   
+```
 
 

@@ -252,7 +252,7 @@ class LightRagKB(KnowledgeBase):
         return EmbeddingFunc(
             embedding_dim=config_dict["dimension"],
             max_token_size=8192,
-            model_name=model_name,
+            # model_name=model_name,
             func=partial(
                 openai_embed.func,
                 model=model_name,
