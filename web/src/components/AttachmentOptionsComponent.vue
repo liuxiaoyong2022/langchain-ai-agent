@@ -6,12 +6,12 @@
           ref="fileInputRef"
           type="file"
           multiple
-          accept=".txt,.md,.docx,.html,.htm"
+          accept=".txt,.md,.docx,.html,.htm,.pdf"
           :disabled="disabled"
           @change="handleFileChange"
           style="display: none"
         />
-        <a-tooltip title="支持 txt/md/docx/html 格式 ≤ 5 MB" placement="right">
+        <a-tooltip title="支持 txt/md/docx/html/pdf 格式 ≤ 5 MB" placement="right">
           <div class="option-content">
             <FileText :size="14" class="option-icon" />
             <span class="option-text">添加附件</span>

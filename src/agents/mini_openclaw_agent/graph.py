@@ -21,6 +21,7 @@ from langchain.agents.middleware import ModelRequest, dynamic_prompt,before_mode
 class MiniOpenClawAgent(BaseAgent):
     name = "mini_openClaw智能体"
     description = "一个模仿mini-open-claw 有一定skill能力的智能体示例"
+    capabilities = ["file_upload", "files"]  # 支持文件上传功能
 
 
     def __init__(self, **kwargs):
