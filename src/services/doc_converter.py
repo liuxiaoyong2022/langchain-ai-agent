@@ -13,7 +13,7 @@ from src.config import config as app_config
 from src.knowledge.indexing import process_file_to_markdown
 from src.utils import logger
 
-ATTACHMENT_ALLOWED_EXTENSIONS: tuple[str, ...] = (".txt", ".md", ".docx", ".html", ".htm")
+ATTACHMENT_ALLOWED_EXTENSIONS: tuple[str, ...] = (".txt", ".md", ".docx", ".html", ".htm", ".pdf")
 MAX_ATTACHMENT_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 MAX_ATTACHMENT_MARKDOWN_CHARS = 32_000
 
@@ -65,6 +65,8 @@ def _truncate_markdown(markdown: str) -> tuple[str, bool]:
 
 async def convert_upload_to_markdown(upload: UploadFile) -> ConversionResult:
     """Persist an UploadFile temporarily, convert it to markdown, and clean up."""
+
+    logger.info(f"**** ---> step 0.1 convert_upload_to_markdown upload.filename:{upload.filename} ")
     if not upload.filename:
         raise ValueError("无法识别的文件名")
 

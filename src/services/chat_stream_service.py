@@ -659,6 +659,8 @@ async def get_agent_state_view(
     if not agent_state.get("files") or agent_state["files"] == {}:
         try:
             attachments = await conv_repo.get_attachments_by_thread_id(thread_id)
+
+
             logger.info(f"[get_agent_state_view] found {len(attachments)} attachments in DB")
             if attachments:
                 first_status = attachments[0].get("status")

@@ -230,7 +230,9 @@ async def upload_thread_attachment_view(
     conversation = await require_user_conversation(conv_repo, thread_id, str(current_user_id))
 
     try:
+        logger.info(f"**** ---> step 0.1 within in upload_thread_attachment_view ")
         conversion = await convert_upload_to_markdown(file)
+        file.file.seek(0) # 重置到开头
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
@@ -244,6 +246,7 @@ async def upload_thread_attachment_view(
     minio_url = None
     try:
         file_content = await file.read()
+        logger.info(f"**** ---> step 0.2 upload file size: {len(file_content)} bytes")
         await file.seek(0)
         client = get_minio_client()
         object_name = f"attachments/{thread_id}/{conversion.file_name}"
@@ -253,8 +256,10 @@ async def upload_thread_attachment_view(
             data=file_content,
             content_type=conversion.file_type or "application/octet-stream",
         )
-        minio_url = result.public_url
-        logger.info(f"Uploaded attachment to MinIO: {object_name}")
+        minio_url = result.url
+        logger.info(f"Uploaded attachment to MinIO: {object_name}, minio_url: {minio_url}")
+        # minio_url = result.public_url
+        # logger.info(f"Uploaded attachment to MinIO: {object_name}")
     except Exception as e:
         logger.error(f"Failed to upload attachment to MinIO: {e}")
         # 继续处理，不因为上传失败而中断

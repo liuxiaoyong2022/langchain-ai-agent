@@ -61,7 +61,9 @@ class MinIOClient:
             self.public_endpoint = f"{host_ip}:9000"
             logger.debug(f"Docker MinIOClient public_endpoint: {self.public_endpoint}")
         else:
-            self.public_endpoint = "localhost:9000"
+            host_ip = (os.getenv("MINIO_HOST_IP") or "").strip()
+            self.public_endpoint = f"{host_ip}:9000"
+            # self.public_endpoint = "localhost:9000"
             logger.debug(f"Default_client: {self.public_endpoint}")
 
     @property
