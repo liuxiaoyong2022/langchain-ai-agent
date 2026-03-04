@@ -6,7 +6,8 @@ import aiohttp
 
 async def make_request(session: aiohttp.ClientSession, request_id: int) -> dict:
     """发送单个请求到API"""
-    url = "http://localhost:5000/chat/call"
+    # url = "http://192.168.0.102:5000/chat/call"
+    url = "http://localhost:5050/chat/call"
     payload = {"query": "写一个冒泡排序", "meta": {}}
 
     start_time = time.time()
