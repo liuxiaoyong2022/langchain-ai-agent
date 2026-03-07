@@ -1,0 +1,28 @@
+name = "主控+子智能体系统"
+description = "使用主控智能体协调多个子智能体完成邮件、图片生成、TTS、天气查询、数字人等任务"
+
+[examples]
+[[examples.example]]
+name = "发送邮件"
+input = "帮我发个邮件"
+description = "触发邮件子智能体"
+
+[[examples.example]]
+name = "生成图片"
+input = "帮我生成一张猫的图片"
+description = "触发图片生成子智能体"
+
+[[examples.example]]
+name = "查询天气"
+input = "今天北京的天气怎么样"
+description = "触发天气查询子智能体"
+
+[[examples.example]]
+name = "生成语音"
+input = "把这段文字转成语音：你好世界"
+description = "触发 TTS 子智能体"
+
+[[examples.example]]
+name = "制作数字人视频"
+input = "制作一个数字人视频"
+description = "触发数字人子智能体"

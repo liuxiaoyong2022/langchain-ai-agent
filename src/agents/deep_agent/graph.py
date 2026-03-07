@@ -1,5 +1,5 @@
 """Deep Agent - 基于create_deep_agent的深度分析智能体"""
-
+from deepagents import create_deep_agent
 from deepagents.middleware.filesystem import FilesystemMiddleware
 from deepagents.middleware.patch_tool_calls import PatchToolCallsMiddleware
 from deepagents.middleware.subagents import SubAgentMiddleware

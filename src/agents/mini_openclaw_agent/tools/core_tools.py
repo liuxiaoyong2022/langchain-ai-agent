@@ -1,6 +1,6 @@
 """
 Mini-OpenClaw 核心工具实现
-5个基础工具：Terminal, Python REPL, Fetch URL, Read File, RAG Search
+6 个基础工具：Terminal, Python REPL, Fetch URL, Read File, RAG Search, 以及一从附件attachment中读取信息的工具 
 """
 # import asyncio
 import inspect
@@ -24,6 +24,8 @@ from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field
 from typing import Optional, Type
 from src.agents.mini_openclaw_agent.setting import get_settings
+from src.utils.logging_config import logger
+from langchain_core.runnables import RunnableConfig
 settings = get_settings()
 
 class TimeoutException(Exception):
@@ -504,6 +506,170 @@ def read_file(
         return f"Error reading file: {str(e)}"
 
 
+@tool
+async def list_conversation_attachments(config: RunnableConfig) -> str:
+    """
+    List all attachment files in the current conversation session.
+
+    Use this to get information about files uploaded to the current conversation session.
+    Returns a list of attachment files with their names, types, and status.
+
+    Automatically retrieves the thread_id from the current conversation context.
+
+    Returns:
+        A formatted list of attachments with file information
+    """
+    # 从 RunnableConfig 中获取 thread_id
+    thread_id = config.get("configurable", {}).get("thread_id")
+    if not thread_id:
+        return "Error: No thread_id found in current conversation context."
+
+    print(f"step 5.0--------------> list_conversation_attachments thread_id:{thread_id}")
+
+    try:
+        from src.storage.postgres.manager import pg_manager
+        from src.repositories.conversation_repository import ConversationRepository
+
+        async with pg_manager.get_async_session_context() as db:
+            conv_repo = ConversationRepository(db)
+            attachments = await conv_repo.get_attachments_by_thread_id(thread_id)
+
+            if not attachments:
+                return "No attachments found in this conversation session."
+
+            # Format the attachment list
+            result = f"Found {len(attachments)} attachment(s):\n\n"
+            for i, attachment in enumerate(attachments, 1):
+                file_name = attachment.get("file_name", "Unknown")
+                file_type = attachment.get("file_type", "Unknown")
+                status = attachment.get("status", "Unknown")
+                file_path = attachment.get("file_path", "N/A")
+                uploaded_at = attachment.get("uploaded_at", "N/A")
+
+                result += f"{i}. {file_name}\n"
+                result += f"   Type: {file_type}\n"
+                result += f"   Status: {status}\n"
+                result += f"   Path: {file_path}\n"
+                result += f"   Uploaded: {uploaded_at}\n\n"
+
+            return result
+
+    except Exception as e:
+        print(f"step 5.error--------------> Error listing attachments: {e}")
+        return f"Error listing attachments: {str(e)}"
+
+
+@tool
+async def fetch_attachment_file(file_name: str, config: RunnableConfig) -> str:
+    """
+    Fetch the original file from MinIO by filename.
+
+    Use this to retrieve the original uploaded file content from storage.
+    The tool automatically matches the filename with uploaded attachments,
+    corrects file extensions, and downloads from MinIO.
+
+    Args:
+        file_name: The name of the file to fetch (e.g., 'document.pdf', 'report.docx')
+
+    Returns:
+        The file content or a download link/summary for binary files
+    """
+    logger.info(f"step 6.0--------------> fetch_attachment_file file_name:{file_name}")
+
+    # 从 RunnableConfig 中获取 thread_id
+    thread_id = config.get("configurable", {}).get("thread_id")
+    if not thread_id:
+        return "Error: No thread_id found in current conversation context."
+
+    try:
+        from src.storage.postgres.manager import pg_manager
+        from src.repositories.conversation_repository import ConversationRepository
+        from src.storage.minio.client import get_minio_client
+
+        async with pg_manager.get_async_session_context() as db:
+            conv_repo = ConversationRepository(db)
+            attachments = await conv_repo.get_attachments_by_thread_id(thread_id)
+
+            if not attachments:
+                return "No attachments found in this conversation session."
+
+            # 标准化文件名（去除路径，只保留文件名）
+            clean_input_name = file_name.split("/")[-1].split("\\")[-1].strip()
+            input_name_lower = clean_input_name.lower()
+
+            # 提取输入文件名的基本名（不含扩展名）
+            input_base = input_name_lower
+            for ext in [".pdf", ".docx", ".doc", ".txt", ".md", ".html", ".htm", ".jpg", ".jpeg", ".png", ".gif"]:
+                if input_name_lower.endswith(ext):
+                    input_base = input_name_lower[:-len(ext)]
+                    break
+
+            # 匹配附件（考虑文件后缀校正）
+            matched_attachment = None
+            for attachment in attachments:
+                attachment_name = attachment.get("file_name", "")
+                attachment_name_lower = attachment_name.lower()
+
+                # 精确匹配
+                if attachment_name_lower == input_name_lower:
+                    matched_attachment = attachment
+                    break
+
+                # 基本名匹配（忽略扩展名）
+                attachment_base = attachment_name_lower
+                for ext in [".pdf", ".docx", ".doc", ".txt", ".md", ".html", ".htm", ".jpg", ".jpeg", ".png", ".gif"]:
+                    if attachment_name_lower.endswith(ext):
+                        attachment_base = attachment_name_lower[:-len(ext)]
+                        break
+
+                if attachment_base == input_base and attachment_base:
+                    matched_attachment = attachment
+                    break
+
+            if not matched_attachment:
+                available_files = [a.get("file_name", "Unknown") for a in attachments]
+                return f"File '{file_name}' not found. Available files:\n" + "\n".join(f"  - {f}" for f in available_files)
+
+            # 获取实际文件名（带原始后缀）
+            actual_file_name = matched_attachment.get("file_name", "file")
+            file_type = matched_attachment.get("file_type", "")
+            logger.info(f"step 6.0.8--------------> actual_file_name: {actual_file_name}")
+            # 构建 MinIO 访问路径
+            # 格式: http://{minio_host}:9000/chat-attachments/attachments/{thread_id}/{文件名.原始后缀}
+            minio_client = get_minio_client()
+            minio_host = minio_client.public_endpoint  # 格式: "{host_ip}:9000"
+
+            bucket_name = "chat-attachments"
+            object_name = f"attachments/{thread_id}/{actual_file_name}"
+            minio_url = f"http://{minio_host}/{bucket_name}/{object_name}"
+
+            logger.info(f"step 6.1-------------->object_name:{object_name}, MinIO URL: {minio_url}")
+
+            # 从 MinIO 下载文件
+            file_data = await minio_client.adownload_file(bucket_name, object_name)
+            logger.info(f"step 6.1.1--------------> file_data length: {len(file_data)}")
+            # 根据文件类型处理返回内容
+            if file_type.startswith("text/") or actual_file_name.endswith((".txt", ".md", ".html", ".htm", ".json", ".xml")):
+                # 文本文件直接返回内容
+                content = file_data.decode("utf-8", errors="replace")
+                # 限制返回内容长度
+                if len(content) > 50000:
+                    content = content[:50000] + "\n\n...[Content truncated due to size]..."
+                return f"File: {actual_file_name}\nSize: {len(file_data)} bytes\n\nContent:\n{content}"
+            elif file_type.startswith("image/"):
+                # 图片文件返回信息
+                return f"Image file: {actual_file_name}\nSize: {len(file_data)} bytes\nFormat: {file_type}\n\nDownload URL: {minio_url}"
+            else:
+                # 二进制文件返回摘要信息
+                return f"Binary file: {actual_file_name}\nSize: {len(file_data)} bytes\nType: {file_type}\n\nNote: This is a binary file. You can access it at: {minio_url}"
+
+    except Exception as e:
+        logger.error(f"step 6.error--------------> Error fetching attachment file: {e}")
+        import traceback
+        traceback.print_exc()
+        return f"Error fetching attachment file: {str(e)}"
+
+
 def initialize_core_tools(project_root: Path) -> List:
     """
     初始化所有核心工具
@@ -567,5 +733,9 @@ def initialize_core_tools(project_root: Path) -> List:
     tools.append(read_file)
     # 5. RAG Search - 知识库检索
     tools.append(search_knowledge_base)
+    # 6. List Conversation Attachments - 查询会话附件列表
+    tools.append(list_conversation_attachments)
+    # 7. Fetch Attachment File - 从MinIO获取原始文件
+    tools.append(fetch_attachment_file)
 
     return tools

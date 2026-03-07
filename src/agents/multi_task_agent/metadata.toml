@@ -1,0 +1,23 @@
+name = "多任务协作智能体"
+description = "基于 LangGraph 1.x 的多任务协作智能体系统，支持邮件、图片生成、TTS、天气查询、数字人等多种任务"
+
+[examples]
+[[examples.example]]
+name = "发送邮件"
+input = "帮我发个邮件"
+description = "触发邮件任务流程"
+
+[[examples.example]]
+name = "生成图片"
+input = "帮我生成一张猫的图片"
+description = "触发图片生成任务流程"
+
+[[examples.example]]
+name = "查询天气"
+input = "今天北京的天气怎么样"
+description = "触发天气查询任务流程"
+
+[[examples.example]]
+name = "生成语音"
+input = "把这段文字转成语音：你好世界"
+description = "触发 TTS 任务流程"
